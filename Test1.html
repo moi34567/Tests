@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mini Auth Empreinte</title>
+</head>
+<body>
+<h2>Authentification Empreinte Digitale</h2>
+<button id="btnAuth">Se connecter avec empreinte</button>
+<p id="status"></p>
+
+<script>
+const status = document.getElementById('status');
+const btnAuth = document.getElementById('btnAuth');
+
+btnAuth.onclick = async () => {
+  if (!window.PublicKeyCredential) {
+    status.textContent = "WebAuthn non supporté par ce navigateur.";
+    return;
+  }
+
+  status.textContent = "Demande d'authentification...";
+
+  try {
+    // Challenge et options factices pour exemple
+    const publicKey = {
+      challenge: Uint8Array.from('randomChallengeString123', c => c.charCodeAt(0)),
+      timeout: 60000,
+      allowCredentials: [], // ici on mettrait l'id de la clé enregistrée
+      userVerification: "preferred"
+    };
+
+    const credential = await navigator.credentials.get({publicKey});
+    
+    if(credential) {
+      status.textContent = "Authentification réussie avec empreinte ! 👏";
+    } else {
+      status.textContent = "Authentification annulée ou échouée.";
+    }
+
+  } catch (err) {
+    status.textContent = "Erreur: " + err.message;
+  }
+};
+</script>
+</body>
+</html>
