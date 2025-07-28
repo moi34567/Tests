@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Connexion rapide avec clé secrète + PIN</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 2rem; background: #f0f0f0; }
+  .hidden { display: none; }
+  input { font-size: 1.2rem; padding: 0.4rem; margin-bottom: 1rem; width: 200px; }
+  button { font-size: 1.1rem; padding: 0.5rem 1rem; }
+</style>
+</head>
+<body>
+
+<h2>Connexion à ton journal</h2>
+
+<div id="fullPassDiv">
+  <label>Mot de passe complet :</label><br/>
+  <input type="password" id="fullPass" autocomplete="off" /><br/>
+  <label><input type="checkbox" id="saveDevice" /> Enregistrer cet appareil</label><br/>
+  <button id="btnLoginFull">Se connecter</button>
+</div>
+
+<div id="pinDiv" class="hidden">
+  <label>Entrez le code PIN 4 chiffres :</label><br/>
+  <input type="password" id="pinCode" maxlength="4" autocomplete="off" /><br/>
+  <button id="btnLoginPin">Valider PIN</button><br/><br/>
+  <button id="btnLogout">Se déconnecter (forcer mot de passe)</button>
+</div>
+
+<p id="message"></p>
+
+<script>
+(() => {
+  const SECRET_KEY_NAME = "mon_journal_clef_secrete"; // clé locale
+  const KNOWN_SECRET = "monAppareilUnique123"; // la clé secrète que toi seul connais (à changer)
+  const MASTER_PASS = "motdepasseSuperSecret"; // ton vrai mot de passe complet (à changer)
+
+  const fullPassDiv = document.getElementById('fullPassDiv');
+  const pinDiv = document.getElementById('pinDiv');
+  const message = document.getElementById('message');
+
+  const fullPassInput = document.getElementById('fullPass');
+  const saveDeviceCheck = document.getElementById('saveDevice');
+  const btnLoginFull = document.getElementById('btnLoginFull');
+
+  const pinInput = document.getElementById('pinCode');
+  const btnLoginPin = document.getElementById('btnLoginPin');
+  const btnLogout = document.getElementById('btnLogout');
+
+  // PIN correct (à personnaliser)
+  const CORRECT_PIN = "1234";
+
+  // Affiche un message simple
+  function showMsg(txt, error = false) {
+    message.textContent = txt;
+    message.style.color = error ? "red" : "green";
+  }
+
+  // Affiche la partie connexion complète (mot de passe)
+  function showFullPass() {
+    fullPassDiv.classList.remove('hidden');
+    pinDiv.classList.add('hidden');
+    showMsg("");
+    fullPassInput.value = "";
+    pinInput.value = "";
+  }
+
+  // Affiche la partie connexion PIN
+  function showPin() {
+    fullPassDiv.classList.add('hidden');
+    pinDiv.classList.remove('hidden');
+    showMsg("");
+    fullPassInput.value = "";
+    pinInput.value = "";
+  }
+
+  // Check si la clé secrète est stockée dans localStorage
+  function hasSecretKey() {
+    const key = localStorage.getItem(SECRET_KEY_NAME);
+    return key === KNOWN_SECRET;
+  }
+
+  // Connexion avec mot de passe complet
+  btnLoginFull.onclick = () => {
+    const pass = fullPassInput.value;
+    if(pass === MASTER_PASS) {
+      showMsg("Mot de passe correct. Bienvenue !");
+
+      if(saveDeviceCheck.checked) {
+        // Enregistre la clé secrète
+        localStorage.setItem(SECRET_KEY_NAME, KNOWN_SECRET);
+        showMsg("Appareil enregistré pour connexion rapide.");
+      }
+
+      // Passe à la page du journal (simulé ici)
+      alert("Connexion réussie, tu es maintenant dans ton journal !");
+      // Ici tu peux rediriger ou afficher le journal
+    } else {
+      showMsg("Mot de passe incorrect.", true);
+    }
+  };
+
+  // Connexion avec PIN
+  btnLoginPin.onclick = () => {
+    const pin = pinInput.value;
+    if(pin === CORRECT_PIN) {
+      showMsg("PIN correct. Bienvenue !");
+      alert("Connexion rapide réussie, tu es maintenant dans ton journal !");
+      // Ici redirection ou affichage du journal
+    } else {
+      showMsg("PIN incorrect.", true);
+    }
+  };
+
+  // Déconnexion (efface la clé secrète et revient au mot de passe)
+  btnLogout.onclick = () => {
+    localStorage.removeItem(SECRET_KEY_NAME);
+    showFullPass();
+    showMsg("Déconnecté. Mot de passe complet requis.");
+  };
+
+  // Au chargement : si clé présente, affiche PIN, sinon mot de passe complet
+  window.onload = () => {
+    if(hasSecretKey()) {
+      showPin();
+    } else {
+      showFullPass();
+    }
+  };
+})();
+</script>
+
+</body>
+</html>
